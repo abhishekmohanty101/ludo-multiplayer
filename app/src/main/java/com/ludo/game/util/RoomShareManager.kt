@@ -9,18 +9,8 @@ import android.net.Uri
  */
 object RoomShareManager {
     
-    // Your app's deep link domain (configure in Firebase Dynamic Links or use custom scheme)
-    private const val WEB_HOST = "ludogame.app"
+    // App's custom scheme for deep linking
     private const val APP_SCHEME = "ludogame"
-    private const val PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.ludo.game"
-    
-    /**
-     * Generates a web URL for sharing (works even if app not installed).
-     * Example: https://ludogame.app/join/ABC123
-     */
-    fun generateWebLink(roomCode: String): String {
-        return "https://$WEB_HOST/join/$roomCode"
-    }
     
     /**
      * Generates a deep link URI that opens the app directly.
@@ -31,20 +21,15 @@ object RoomShareManager {
     }
     
     /**
-     * Creates the share message with room code and link.
+     * Creates the share message with room code.
      */
     fun createShareMessage(roomCode: String, hostName: String = "a friend"): String {
-        val webLink = generateWebLink(roomCode)
-        
         return """
             |🎲 Join my Ludo game!
             |
             |Room Code: $roomCode
             |
-            |👉 Click to join: $webLink
-            |
-            |Don't have the app? Download here:
-            |$PLAY_STORE_URL
+            |Open the Ludo app and enter this code to join!
         """.trimMargin()
     }
     
@@ -77,9 +62,7 @@ object RoomShareManager {
     
     /**
      * Extracts room code from a deep link URI.
-     * Handles both formats:
-     * - https://ludogame.app/join/ABC123
-     * - ludogame://join?code=ABC123
+     * Handles: ludogame://join?code=ABC123
      */
     fun extractRoomCode(uri: Uri): String? {
         // Try path format: /join/ABC123
