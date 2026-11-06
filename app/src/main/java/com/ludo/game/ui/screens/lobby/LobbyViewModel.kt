@@ -1,5 +1,6 @@
 package com.ludo.game.ui.screens.lobby
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ludo.game.data.model.GameRoom
@@ -21,10 +22,10 @@ data class LobbyUiState(
     val isLoading: Boolean = false,
     val room: GameRoom? = null,
     val roomCode: String = "",
-    val shareLink: String = "",
     val shareMessage: String = "",
     val error: String? = null,
-    val isGameStarted: Boolean = false
+    val isGameStarted: Boolean = false,
+    val isHost: Boolean = false
 )
 
 /**
@@ -32,11 +33,25 @@ data class LobbyUiState(
  */
 @HiltViewModel
 class LobbyViewModel @Inject constructor(
-    private val roomRepository: RoomRepository
+    private val roomRepository: RoomRepository,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(LobbyUiState())
     val uiState: StateFlow<LobbyUiState> = _uiState.asStateFlow()
+    
+    // Get parameters from navigation
+    private val playerName: String = savedStateHandle.get<String>("playerName") ?: "Player"
+    private val joinRoomCode: String? = savedStateHandle.get<String>("roomCode")
+    
+    init {
+        // Auto-create or join based on navigation params
+        if (joinRoomCode != null) {
+            joinRoom(joinRoomCode, playerName)
+        } else {
+            createRoom(playerName)
+        }
+    }
     
     /**
      * Creates a new room and generates share link.
@@ -47,7 +62,6 @@ class LobbyViewModel @Inject constructor(
             
             roomRepository.createRoom(hostName)
                 .onSuccess { room ->
-                    val shareLink = RoomShareManager.generateWebLink(room.roomCode)
                     val shareMessage = RoomShareManager.createShareMessage(room.roomCode, hostName)
                     
                     _uiState.update { 
@@ -55,8 +69,8 @@ class LobbyViewModel @Inject constructor(
                             isLoading = false,
                             room = room,
                             roomCode = room.roomCode,
-                            shareLink = shareLink,
-                            shareMessage = shareMessage
+                            shareMessage = shareMessage,
+                            isHost = true
                         )
                     }
                     
@@ -87,7 +101,8 @@ class LobbyViewModel @Inject constructor(
                         it.copy(
                             isLoading = false,
                             room = room,
-                            roomCode = room.roomCode
+                            roomCode = room.roomCode,
+                            isHost = false
                         )
                     }
                     

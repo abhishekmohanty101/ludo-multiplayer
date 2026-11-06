@@ -1,13 +1,9 @@
 package com.ludo.game.ui.screens.lobby
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -25,11 +21,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.ludo.game.data.model.GameRoom
 import com.ludo.game.data.model.Player
 import com.ludo.game.data.model.PlayerColor
 import com.ludo.game.util.RoomShareManager
@@ -78,78 +72,92 @@ fun WaitingRoomScreen(
             )
         }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Room Code Card
-            RoomCodeCard(
-                roomCode = uiState.roomCode,
-                onCopyClick = {
-                    RoomShareManager.copyToClipboard(context, uiState.roomCode)
-                    Toast.makeText(context, "Code copied!", Toast.LENGTH_SHORT).show()
-                },
-                onShareClick = {
-                    RoomShareManager.shareRoomInvite(
-                        context = context,
-                        roomCode = uiState.roomCode,
-                        hostName = uiState.room?.hostName ?: "Player"
-                    )
+        if (uiState.isLoading && uiState.room == null) {
+            // Show loading while creating/joining room
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    CircularProgressIndicator()
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Setting up room...")
                 }
-            )
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            // Players List
-            Text(
-                text = "Players (${uiState.room?.players?.size ?: 0}/4)",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.align(Alignment.Start)
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            PlayersList(
-                players = uiState.room?.players?.values?.toList() ?: emptyList(),
-                hostId = uiState.room?.hostId ?: "",
-                modifier = Modifier.weight(1f)
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Start Game Button (Host Only)
-            uiState.room?.let { room ->
-                val isHost = room.hostId == room.players.keys.firstOrNull()
-                
-                if (isHost) {
-                    Button(
-                        onClick = { viewModel.startGame() },
-                        enabled = room.canStart() && !uiState.isLoading,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp)
-                    ) {
-                        if (uiState.isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp),
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        } else {
-                            Text(
-                                text = if (room.canStart()) "Start Game" else "Waiting for players...",
-                                fontSize = 18.sp
-                            )
-                        }
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Room Code Card
+                RoomCodeCard(
+                    roomCode = uiState.roomCode,
+                    onCopyClick = {
+                        RoomShareManager.copyToClipboard(context, uiState.roomCode)
+                        Toast.makeText(context, "Code copied!", Toast.LENGTH_SHORT).show()
+                    },
+                    onShareClick = {
+                        RoomShareManager.shareRoomInvite(
+                            context = context,
+                            roomCode = uiState.roomCode,
+                            hostName = uiState.room?.hostName ?: "Player"
+                        )
                     }
-                } else {
-                    Text(
-                        text = "Waiting for host to start the game...",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                )
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // Players List
+                Text(
+                    text = "Players (${uiState.room?.players?.size ?: 0}/4)",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.align(Alignment.Start)
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                PlayersList(
+                    players = uiState.room?.players?.values?.toList() ?: emptyList(),
+                    hostId = uiState.room?.hostId ?: "",
+                    modifier = Modifier.weight(1f)
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // Start Game Button (Host Only)
+                uiState.room?.let { room ->
+                    if (uiState.isHost) {
+                        Button(
+                            onClick = { viewModel.startGame() },
+                            enabled = room.canStart() && !uiState.isLoading,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp)
+                        ) {
+                            if (uiState.isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                            } else {
+                                Text(
+                                    text = if (room.canStart()) "Start Game" else "Waiting for players...",
+                                    fontSize = 18.sp
+                                )
+                            }
+                        }
+                    } else {
+                        Text(
+                            text = "Waiting for host to start the game...",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
         }
@@ -185,28 +193,32 @@ fun RoomCodeCard(
             Spacer(modifier = Modifier.height(8.dp))
             
             // Large Room Code Display
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                roomCode.forEach { char ->
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .background(
-                                MaterialTheme.colorScheme.primaryContainer,
-                                RoundedCornerShape(8.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = char.toString(),
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
+            if (roomCode.isNotEmpty()) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    roomCode.forEach { char ->
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.primaryContainer,
+                                    RoundedCornerShape(8.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = char.toString(),
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
                     }
                 }
+            } else {
+                CircularProgressIndicator(modifier = Modifier.size(32.dp))
             }
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -217,6 +229,7 @@ fun RoomCodeCard(
             ) {
                 OutlinedButton(
                     onClick = onCopyClick,
+                    enabled = roomCode.isNotEmpty(),
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(
@@ -230,6 +243,7 @@ fun RoomCodeCard(
                 
                 Button(
                     onClick = onShareClick,
+                    enabled = roomCode.isNotEmpty(),
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(
