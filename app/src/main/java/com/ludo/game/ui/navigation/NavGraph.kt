@@ -1,6 +1,7 @@
 package com.ludo.game.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -31,12 +32,25 @@ object Routes {
 
 /**
  * Main navigation graph for the app.
+ * Named LudoNavGraph to match MainActivity usage.
  */
 @Composable
-fun NavGraph(
+fun LudoNavGraph(
     navController: NavHostController,
+    deepLinkRoomCode: String? = null,
+    onDeepLinkHandled: () -> Unit = {},
     startDestination: String = Routes.HOME
 ) {
+    // Handle deep link navigation
+    LaunchedEffect(deepLinkRoomCode) {
+        deepLinkRoomCode?.let { code ->
+            // Navigate to join room with a default player name
+            // User will be prompted to enter name in the flow
+            navController.navigate(Routes.joinRoom("Player", code))
+            onDeepLinkHandled()
+        }
+    }
+    
     NavHost(
         navController = navController,
         startDestination = startDestination
@@ -47,10 +61,16 @@ fun NavGraph(
                 onCreateGame = { playerName ->
                     navController.navigate(Routes.createRoom(playerName))
                 },
-                onJoinGame = { playerName, roomCode ->
-                    navController.navigate(Routes.joinRoom(playerName, roomCode))
+                onJoinGame = { combinedValue ->
+                    // JoinGameDialog passes "name|roomCode" as single string
+                    val parts = combinedValue.split("|")
+                    if (parts.size == 2) {
+                        val playerName = parts[0]
+                        val roomCode = parts[1]
+                        navController.navigate(Routes.joinRoom(playerName, roomCode))
+                    }
                 },
-                onViewHistory = {
+                onOpenHistory = {
                     navController.navigate(Routes.HISTORY)
                 }
             )
@@ -111,7 +131,7 @@ fun NavGraph(
         composable(Routes.HISTORY) {
             HistoryScreen(
                 onBackClick = { navController.popBackStack() },
-                onReplayClick = { gameId ->
+                onReplayGame = { gameId ->
                     navController.navigate(Routes.replay(gameId))
                 }
             )
@@ -129,4 +149,16 @@ fun NavGraph(
             )
         }
     }
+}
+
+// Keep the old name as an alias for backward compatibility
+@Composable
+fun NavGraph(
+    navController: NavHostController,
+    startDestination: String = Routes.HOME
+) {
+    LudoNavGraph(
+        navController = navController,
+        startDestination = startDestination
+    )
 }
