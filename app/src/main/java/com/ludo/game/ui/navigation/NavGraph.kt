@@ -119,6 +119,7 @@ fun LudoNavGraph(
             )
         ) {
             GameScreen(
+                onBackClick = { navController.popBackStack() },
                 onGameEnd = {
                     navController.navigate(Routes.HOME) {
                         popUpTo(Routes.HOME) { inclusive = true }
