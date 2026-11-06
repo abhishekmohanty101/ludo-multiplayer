@@ -1,11 +1,7 @@
 buildscript {
     repositories {
         google()
-        mavenCentral {
-            content {
-                excludeGroupByRegex("com\\.google\\..*")
-            }
-        }
+        mavenCentral()
     }
     dependencies {
         classpath("com.android.tools.build:gradle:8.2.2")
