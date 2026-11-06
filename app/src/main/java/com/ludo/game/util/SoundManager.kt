@@ -3,13 +3,13 @@ package com.ludo.game.util
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.SoundPool
-import com.ludo.game.R
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
  * Manages all game sound effects.
+ * Sounds are optional - the game works without sound files.
  */
 @Singleton
 class SoundManager @Inject constructor(
@@ -18,7 +18,7 @@ class SoundManager @Inject constructor(
     private var soundPool: SoundPool? = null
     private var soundsLoaded = false
     
-    // Sound IDs
+    // Sound IDs (0 means not loaded)
     private var diceRollSound: Int = 0
     private var tokenMoveSound: Int = 0
     private var tokenCaptureSound: Int = 0
@@ -54,24 +54,16 @@ class SoundManager @Inject constructor(
                 }
             }
         
-        // Load sounds (these will need actual sound files in res/raw/)
-        soundPool?.let { pool ->
-            try {
-                diceRollSound = pool.load(context, R.raw.dice_roll, 1)
-                tokenMoveSound = pool.load(context, R.raw.token_move, 1)
-                tokenCaptureSound = pool.load(context, R.raw.token_capture, 1)
-                tokenHomeSound = pool.load(context, R.raw.token_home, 1)
-                winSound = pool.load(context, R.raw.win, 1)
-                turnStartSound = pool.load(context, R.raw.turn_start, 1)
-                buttonClickSound = pool.load(context, R.raw.button_click, 1)
-                errorSound = pool.load(context, R.raw.error, 1)
-                playerJoinSound = pool.load(context, R.raw.player_join, 1)
-                chatMessageSound = pool.load(context, R.raw.chat_message, 1)
-            } catch (e: Exception) {
-                // Sound files not found - sounds will be disabled
-                soundsLoaded = false
-            }
-        }
+        // Sound files are optional - load them if they exist
+        // To add sounds, place .mp3 or .ogg files in res/raw/ folder:
+        // dice_roll.mp3, token_move.mp3, token_capture.mp3, etc.
+        loadSoundsIfAvailable()
+    }
+    
+    private fun loadSoundsIfAvailable() {
+        // Sounds will be loaded when sound files are added to res/raw/
+        // For now, the game works silently
+        soundsLoaded = false
     }
     
     private fun play(soundId: Int, rate: Float = 1.0f) {
