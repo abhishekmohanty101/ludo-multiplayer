@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "171142492675",
+    "project_id": "ludogame-25509",
+    "storage_bucket": "ludogame-25509.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:171142492675:android:419fd3c8269b3e43cd9436",
+        "android_client_info": {
+          "package_name": "com.ludo.game"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7SS6Bq7hD4MzZBSyoF55hht-I3W7CqyI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

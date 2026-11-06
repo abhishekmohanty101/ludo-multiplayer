@@ -1,0 +1,34 @@
+# Built files
+*.iml
+.gradle
+/local.properties
+/.idea
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# App build
+/app/build
+/app/release
+
+# Gradle
+.gradle/
+build/
+
+# Android Studio
+*.apk
+*.ap_
+*.aab
+
+# Kotlin
+*.kotlin_metadata
+
+# Google Services (keep this private)
+# google-services.json
+
+# OS files
+.DS_Store
+Thumbs.db
